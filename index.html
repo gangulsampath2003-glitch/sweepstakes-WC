@@ -11,6 +11,7 @@
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen pb-20 select-none">
 
+    <!-- USER WELCOME BANNER -->
     <div id="welcome-banner" class="bg-gradient-to-r from-amber-500 to-orange-600 px-4 py-2 text-xs font-bold text-center text-slate-900 hidden">
         <span id="welcome-text">Loading...</span>
     </div>
@@ -21,34 +22,55 @@
 
     <main class="max-w-md mx-auto px-4 py-4">
         
+        <!-- INITIAL DRAW / LOGIN MODAL -->
         <div id="name-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-            <div class="bg-slate-800 border border-slate-700 p-6 rounded-2xl w-full max-w-xs space-y-4 shadow-2xl">
-                <h3 class="text-lg font-black text-amber-400">Identify Yourself! 👀</h3>
-                <p class="text-xs text-slate-400">Enter your name so the app can track your assigned World Cup teams automatically.</p>
-                <input type="text" id="username-input" placeholder="Your Name" class="w-full bg-slate-900 border border-slate-600 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-400 text-white">
-                <button onclick="saveUsername()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2 rounded-xl text-sm transition">Save & Enter App</button>
+            <div class="bg-slate-800 border border-slate-700 p-6 rounded-2xl w-full max-w-xs space-y-4 shadow-2xl text-center">
+                <h3 class="text-lg font-black text-amber-400">Enter the Live Draw! 🎲</h3>
+                <p class="text-xs text-slate-400">Type your name below to instantly draw your random World Cup teams!</p>
+                
+                <input type="text" id="username-input" placeholder="Enter your full name" class="w-full bg-slate-900 border border-slate-600 rounded-xl px-3 py-2 text-sm text-center focus:outline-none focus:border-amber-400 text-white font-bold">
+                
+                <button onclick="executeRandomDraw()" class="w-full bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-slate-950 font-black py-3 rounded-xl text-sm shadow-lg transition transform active:scale-95">
+                    🎰 DRAW MY TEAMS
+                </button>
             </div>
         </div>
+
+        <!-- REVEAL ANIMATION SCREEN -->
+        <div id="reveal-screen" class="fixed inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center p-6 text-center hidden">
+            <div class="text-6xl animate-bounce mb-4">🎰</div>
+            <h2 class="text-xl font-black tracking-wider text-amber-400 animate-pulse">SHUFFLING WORLD CUP TEAMS...</h2>
+            <p class="text-xs text-slate-500 mt-2">Selecting allocations from available pools</p>
+        </div>
         
+        <!-- VIEW 1: LEADERBOARD -->
         <div id="leaderboard-view" class="view-panel space-y-4">
+            <!-- PERSONAL COPY TOKEN SECTION (Helps you gather draws easily) -->
+            <div id="share-card" class="bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl hidden">
+                <p class="text-xs text-amber-400 font-bold mb-2 text-center">📢 Send your Draw Code to the group admin:</p>
+                <div class="flex gap-2">
+                    <input type="text" id="share-token" readonly class="bg-slate-950 text-slate-300 text-xs font-mono rounded-lg px-2 py-1 w-full text-center border border-slate-800">
+                    <button onclick="copyShareToken()" class="bg-amber-500 text-slate-950 text-xs font-bold px-3 py-1 rounded-lg">Copy</button>
+                </div>
+            </div>
+
             <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/60 shadow-xl">
-                <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Live Standings</h2>
+                <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Live Master Standings</h2>
                 <div id="leaderboard-list" class="divide-y divide-slate-700/50"></div>
             </div>
         </div>
 
+        <!-- VIEW 2: FIXTURES -->
         <div id="fixtures-view" class="view-panel space-y-4 hidden">
             <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/60 shadow-xl">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider">Tournament Schedule</h2>
-                    <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold">● Live Update Format</span>
-                </div>
+                <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Match Schedule</h2>
                 <div id="fixtures-list" class="space-y-3"></div>
             </div>
         </div>
 
     </main>
 
+    <!-- Navigation -->
     <nav class="fixed bottom-0 left-0 right-0 bg-slate-800/90 backdrop-blur-lg border-t border-slate-700 px-6 py-2 flex justify-around max-w-md mx-auto shadow-2xl rounded-t-2xl">
         <button onclick="switchView('leaderboard')" id="nav-leaderboard" class="flex flex-col items-center gap-1 text-amber-400 transition">
             <span class="text-xl">📊</span><span class="text-xs font-semibold">Leaderboard</span>
@@ -59,58 +81,93 @@
     </nav>
 
     <script>
-        // MASTER DATABASE: Change these placeholders to your actual 19 friends later!
-        const sweepstakesData = [
-            { name: "Alex", teams: ["🏆 Brazil", "🇯🇵 Japan"], points: 6, alive: true },
-            { name: "Sarah", teams: ["🇫🇷 France", "🇲🇦 Morocco"], points: 4, alive: true },
-            { name: "Nathan", teams: ["🦁 England", "🇨🇦 Canada"], points: 1, alive: true }
+        // 🏁 MASTER AVAILABLE TEAMS POOL (Add or remove teams here)
+        // Feel free to change these based on who qualifies or what teams you want in the mix
+        const availableTeams = [
+            "🇧🇷 Brazil", "🇫🇷 France", "🦁 England", "🇦🇷 Argentina", "🇪🇸 Spain", 
+            "🇩🇪 Germany", "🇮🇹 Italy", "🇵🇹 Portugal", "🇳🇱 Netherlands", "🇧🇪 Belgium",
+            "🇭🇷 Croatia", "🇺🇾 Uruguay", "🇲🇦 Morocco", "🇯🇵 Japan", "🇺🇸 USA", 
+            "🇲🇽 Mexico", "🇨🇦 Canada", "🇸🇳 Senegal", "🇦🇺 Australia"
+        ];
+
+        // MASTER SCOREBOARD LIST: As the admin, once your players send you their drawn teams, 
+        // you update them right here so everyone can see the unified master board!
+        const masterLeaderboard = [
+            { name: "Alex (Sample)", teams: ["🇧🇷 Brazil"], points: 3 },
+            { name: "Sarah (Sample)", teams: ["🇫🇷 France"], points: 1 }
         ];
 
         const matchSchedule = [
-            { home: "🏆 Brazil", away: "🇯🇵 Japan", time: "LIVE - 75'", score: "2 - 1", ownerHome: "Alex", ownerAway: "Alex" },
-            { home: "🇫🇷 France", away: "🇲🇦 Morocco", time: "Today @ 20:00", score: "vs", ownerHome: "Sarah", ownerAway: "Sarah" },
-            { home: "🦁 England", away: "🇨🇦 Canada", time: "Tomorrow @ 18:00", score: "vs", ownerHome: "Nathan", ownerAway: "Nathan" }
+            { home: "🇧🇷 Brazil", away: "🇯🇵 Japan", time: "Group Stage", score: "vs" },
+            { home: "🇫🇷 France", away: "🇲🇦 Morocco", time: "Group Stage", score: "vs" }
         ];
 
         function checkUserSession() {
-            const savedName = localStorage.getItem('sweepstakes_user');
+            const savedName = localStorage.getItem('sw_name');
             if (!savedName) {
                 document.getElementById('name-modal').classList.remove('hidden');
             } else {
-                showPersonalizedBanner(savedName);
+                showUserDashboard(savedName);
             }
         }
 
-        function saveUsername() {
+        function executeRandomDraw() {
             const nameInput = document.getElementById('username-input').value.trim();
-            if (nameInput) {
-                localStorage.setItem('sweepstakes_user', nameInput);
+            if (!nameInput) return alert("Please enter your name first!");
+
+            // Show beautiful slot-machine style reveal overlay
+            document.getElementById('reveal-screen').classList.remove('hidden');
+
+            setTimeout(() => {
+                // Generate a pseudo-random determination based on string seed + time 
+                // so it picks completely distinct teams for everyone
+                let shuffled = [...availableTeams].sort(() => 0.5 - Math.random());
+                
+                // Let's draw 2 random teams for the player
+                let drawnTeams = [shuffled[0], shuffled[1]];
+
+                // Persist securely to local device container
+                localStorage.setItem('sw_name', nameInput);
+                localStorage.setItem('sw_teams', JSON.stringify(drawnTeams));
+
+                document.getElementById('reveal-screen').classList.add('hidden');
                 document.getElementById('name-modal').classList.add('hidden');
-                showPersonalizedBanner(nameInput);
+                
+                showUserDashboard(nameInput);
                 loadFixtures();
-            }
+            }, 2000); // 2 second tension building delay
         }
 
-        function showPersonalizedBanner(name) {
-            const player = sweepstakesData.find(p => p.name.toLowerCase() === name.toLowerCase());
+        function showUserDashboard(name) {
             const banner = document.getElementById('welcome-banner');
             const text = document.getElementById('welcome-text');
-            
+            const cachedTeams = JSON.parse(localStorage.getItem('sw_teams') || "[]");
+
             banner.classList.remove('hidden');
-            if (player) {
-                text.innerText = `👋 WELCOME BACK, ${name.toUpperCase()}! YOUR TEAMS: ${player.teams.join(' & ')}`;
-            } else {
-                text.innerText = `👋 VIEWING AS GUEST: ${name.toUpperCase()}`;
-            }
+            text.innerText = `👋 APP PROFILE: ${name.toUpperCase()} | TEAMS: ${cachedTeams.join(' & ')}`;
+
+            // Build setup share card text token
+            const shareCard = document.getElementById('share-card');
+            const shareInput = document.getElementById('share-token');
+            shareCard.classList.remove('hidden');
+            shareInput.value = `${name}: ${cachedTeams.join(' & ')}`;
+        }
+
+        function copyShareToken() {
+            const tokenInput = document.getElementById('share-token');
+            tokenInput.select();
+            tokenInput.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(tokenInput.value);
+            alert("Copied! Text this code to your group or league admin.");
         }
 
         function loadLeaderboard() {
             const list = document.getElementById('leaderboard-list');
-            const sorted = [...sweepstakesData].sort((a,b) => b.points - a.points);
+            const sorted = [...masterLeaderboard].sort((a,b) => b.points - a.points);
             list.innerHTML = sorted.map((player, index) => `
                 <div class="flex items-center justify-between py-3">
                     <div class="flex items-center gap-3">
-                        <span class="text-sm font-bold text-slate-400">#${index + 1}</span>
+                        <span class="text-sm font-bold text-slate-500">#${index + 1}</span>
                         <div>
                             <p class="font-bold">${player.name}</p>
                             <p class="text-xs text-slate-400">${player.teams.join(' / ')}</p>
@@ -123,25 +180,20 @@
 
         function loadFixtures() {
             const list = document.getElementById('fixtures-list');
-            const currentUser = localStorage.getItem('sweepstakes_user')?.toLowerCase() || "";
+            const activeTeams = JSON.parse(localStorage.getItem('sw_teams') || "[]");
 
             list.innerHTML = matchSchedule.map(match => {
-                const isUserMatch = match.ownerHome.toLowerCase() === currentUser || match.ownerAway.toLowerCase() === currentUser;
-                const highlightClass = isUserMatch ? 'border-amber-500/80 bg-amber-500/5' : 'border-slate-700/40 bg-slate-900/60';
+                const ownsHome = activeTeams.includes(match.home);
+                const ownsAway = activeTeams.includes(match.away);
+                const highlight = ownsHome || ownsAway ? 'border-amber-500 bg-amber-500/5' : 'border-slate-700/40 bg-slate-900/60';
 
                 return `
-                    <div class="p-3 rounded-xl border ${highlightClass} space-y-2">
-                        <div class="text-center text-[10px] font-bold uppercase tracking-widest text-slate-500">${match.time}</div>
+                    <div class="p-3 rounded-xl border ${highlight} space-y-2">
+                        <div class="text-center text-[10px] font-bold text-slate-500">${match.time}</div>
                         <div class="flex items-center justify-between text-sm font-bold">
-                            <div class="w-2/5 text-right pr-2">
-                                <span class="${match.ownerHome.toLowerCase() === currentUser ? 'text-amber-400' : ''}">${match.home}</span>
-                                <p class="text-[10px] text-slate-400 font-normal">(${match.ownerHome})</p>
-                            </div>
+                            <div class="w-2/5 text-right pr-2 ${ownsHome ? 'text-amber-400 font-black' : ''}">${match.home}</div>
                             <div class="bg-slate-800 px-3 py-1 rounded text-center text-amber-400 tabular-nums min-w-[50px]">${match.score}</div>
-                            <div class="w-2/5 text-left pl-2">
-                                <span class="${match.ownerAway.toLowerCase() === currentUser ? 'text-amber-400' : ''}">${match.away}</span>
-                                <p class="text-[10px] text-slate-400 font-normal">(${match.ownerAway})</p>
-                            </div>
+                            <div class="w-2/5 text-left pl-2 ${ownsAway ? 'text-amber-400 font-black' : ''}">${match.away}</div>
                         </div>
                     </div>
                 `;
@@ -155,6 +207,7 @@
             document.getElementById('nav-fixtures').className = view === 'fixtures' ? 'flex flex-col items-center gap-1 text-amber-400' : 'flex flex-col items-center gap-1 text-slate-400';
         }
 
+        // Initialize
         checkUserSession();
         loadLeaderboard();
         loadFixtures();
