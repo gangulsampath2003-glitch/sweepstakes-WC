@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Cup Sweepstakes</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen pb-20 select-none">
+
+    <div id="welcome-banner" class="bg-gradient-to-r from-amber-500 to-orange-600 px-4 py-2 text-xs font-bold text-center text-slate-900 hidden">
+        <span id="welcome-text">Loading...</span>
+    </div>
+
+    <header class="bg-slate-800/80 backdrop-blur-md border-b border-slate-700 sticky top-0 z-50 px-4 py-3 text-center">
+        <h1 class="text-xl font-black tracking-wide bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">🏆 CUP SWEEPSTAKES</h1>
+    </header>
+
+    <main class="max-w-md mx-auto px-4 py-4">
+        
+        <div id="name-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-slate-800 border border-slate-700 p-6 rounded-2xl w-full max-w-xs space-y-4 shadow-2xl">
+                <h3 class="text-lg font-black text-amber-400">Identify Yourself! 👀</h3>
+                <p class="text-xs text-slate-400">Enter your name so the app can track your assigned World Cup teams automatically.</p>
+                <input type="text" id="username-input" placeholder="Your Name" class="w-full bg-slate-900 border border-slate-600 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-400 text-white">
+                <button onclick="saveUsername()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2 rounded-xl text-sm transition">Save & Enter App</button>
+            </div>
+        </div>
+        
+        <div id="leaderboard-view" class="view-panel space-y-4">
+            <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/60 shadow-xl">
+                <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Live Standings</h2>
+                <div id="leaderboard-list" class="divide-y divide-slate-700/50"></div>
+            </div>
+        </div>
+
+        <div id="fixtures-view" class="view-panel space-y-4 hidden">
+            <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/60 shadow-xl">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider">Tournament Schedule</h2>
+                    <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold">● Live Update Format</span>
+                </div>
+                <div id="fixtures-list" class="space-y-3"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-slate-800/90 backdrop-blur-lg border-t border-slate-700 px-6 py-2 flex justify-around max-w-md mx-auto shadow-2xl rounded-t-2xl">
+        <button onclick="switchView('leaderboard')" id="nav-leaderboard" class="flex flex-col items-center gap-1 text-amber-400 transition">
+            <span class="text-xl">📊</span><span class="text-xs font-semibold">Leaderboard</span>
+        </button>
+        <button onclick="switchView('fixtures')" id="nav-fixtures" class="flex flex-col items-center gap-1 text-slate-400 transition">
+            <span class="text-xl">⚽</span><span class="text-xs font-semibold">Fixtures</span>
+        </button>
+    </nav>
+
+    <script>
+        // MASTER DATABASE: Change these placeholders to your actual 19 friends later!
+        const sweepstakesData = [
+            { name: "Alex", teams: ["🏆 Brazil", "🇯🇵 Japan"], points: 6, alive: true },
+            { name: "Sarah", teams: ["🇫🇷 France", "🇲🇦 Morocco"], points: 4, alive: true },
+            { name: "Nathan", teams: ["🦁 England", "🇨🇦 Canada"], points: 1, alive: true }
+        ];
+
+        const matchSchedule = [
+            { home: "🏆 Brazil", away: "🇯🇵 Japan", time: "LIVE - 75'", score: "2 - 1", ownerHome: "Alex", ownerAway: "Alex" },
+            { home: "🇫🇷 France", away: "🇲🇦 Morocco", time: "Today @ 20:00", score: "vs", ownerHome: "Sarah", ownerAway: "Sarah" },
+            { home: "🦁 England", away: "🇨🇦 Canada", time: "Tomorrow @ 18:00", score: "vs", ownerHome: "Nathan", ownerAway: "Nathan" }
+        ];
+
+        function checkUserSession() {
+            const savedName = localStorage.getItem('sweepstakes_user');
+            if (!savedName) {
+                document.getElementById('name-modal').classList.remove('hidden');
+            } else {
+                showPersonalizedBanner(savedName);
+            }
+        }
+
+        function saveUsername() {
+            const nameInput = document.getElementById('username-input').value.trim();
+            if (nameInput) {
+                localStorage.setItem('sweepstakes_user', nameInput);
+                document.getElementById('name-modal').classList.add('hidden');
+                showPersonalizedBanner(nameInput);
+                loadFixtures();
+            }
+        }
+
+        function showPersonalizedBanner(name) {
+            const player = sweepstakesData.find(p => p.name.toLowerCase() === name.toLowerCase());
+            const banner = document.getElementById('welcome-banner');
+            const text = document.getElementById('welcome-text');
+            
+            banner.classList.remove('hidden');
+            if (player) {
+                text.innerText = `👋 WELCOME BACK, ${name.toUpperCase()}! YOUR TEAMS: ${player.teams.join(' & ')}`;
+            } else {
+                text.innerText = `👋 VIEWING AS GUEST: ${name.toUpperCase()}`;
+            }
+        }
+
+        function loadLeaderboard() {
+            const list = document.getElementById('leaderboard-list');
+            const sorted = [...sweepstakesData].sort((a,b) => b.points - a.points);
+            list.innerHTML = sorted.map((player, index) => `
+                <div class="flex items-center justify-between py-3">
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-bold text-slate-400">#${index + 1}</span>
+                        <div>
+                            <p class="font-bold">${player.name}</p>
+                            <p class="text-xs text-slate-400">${player.teams.join(' / ')}</p>
+                        </div>
+                    </div>
+                    <span class="bg-slate-700 px-3 py-1 rounded-full text-xs font-black text-amber-400">${player.points} pts</span>
+                </div>
+            `).join('');
+        }
+
+        function loadFixtures() {
+            const list = document.getElementById('fixtures-list');
+            const currentUser = localStorage.getItem('sweepstakes_user')?.toLowerCase() || "";
+
+            list.innerHTML = matchSchedule.map(match => {
+                const isUserMatch = match.ownerHome.toLowerCase() === currentUser || match.ownerAway.toLowerCase() === currentUser;
+                const highlightClass = isUserMatch ? 'border-amber-500/80 bg-amber-500/5' : 'border-slate-700/40 bg-slate-900/60';
+
+                return `
+                    <div class="p-3 rounded-xl border ${highlightClass} space-y-2">
+                        <div class="text-center text-[10px] font-bold uppercase tracking-widest text-slate-500">${match.time}</div>
+                        <div class="flex items-center justify-between text-sm font-bold">
+                            <div class="w-2/5 text-right pr-2">
+                                <span class="${match.ownerHome.toLowerCase() === currentUser ? 'text-amber-400' : ''}">${match.home}</span>
+                                <p class="text-[10px] text-slate-400 font-normal">(${match.ownerHome})</p>
+                            </div>
+                            <div class="bg-slate-800 px-3 py-1 rounded text-center text-amber-400 tabular-nums min-w-[50px]">${match.score}</div>
+                            <div class="w-2/5 text-left pl-2">
+                                <span class="${match.ownerAway.toLowerCase() === currentUser ? 'text-amber-400' : ''}">${match.away}</span>
+                                <p class="text-[10px] text-slate-400 font-normal">(${match.ownerAway})</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function switchView(view) {
+            document.querySelectorAll('.view-panel').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`${view}-view`).classList.remove('hidden');
+            document.getElementById('nav-leaderboard').className = view === 'leaderboard' ? 'flex flex-col items-center gap-1 text-amber-400' : 'flex flex-col items-center gap-1 text-slate-400';
+            document.getElementById('nav-fixtures').className = view === 'fixtures' ? 'flex flex-col items-center gap-1 text-amber-400' : 'flex flex-col items-center gap-1 text-slate-400';
+        }
+
+        checkUserSession();
+        loadLeaderboard();
+        loadFixtures();
+    </script>
+</body>
+</html>
