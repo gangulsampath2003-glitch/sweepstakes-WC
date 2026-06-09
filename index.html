@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>World Cup Sweepstakes</title>
+    <title>World Cup Tracker</title>
     <link rel="manifest" href="manifest.json">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -17,7 +17,7 @@
     </div>
 
     <header class="bg-slate-800/80 backdrop-blur-md border-b border-slate-700 sticky top-0 z-50 px-4 py-3 text-center">
-        <h1 class="text-xl font-black tracking-wide bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">🏆 CUP SWEEPSTAKES</h1>
+        <h1 class="text-xl font-black tracking-wide bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">🏆 MY CUP TRACKER</h1>
     </header>
 
     <main class="max-w-md mx-auto px-4 py-4">
@@ -25,13 +25,13 @@
         <!-- INITIAL DRAW / LOGIN MODAL -->
         <div id="name-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-slate-800 border border-slate-700 p-6 rounded-2xl w-full max-w-xs space-y-4 shadow-2xl text-center">
-                <h3 class="text-lg font-black text-amber-400">Enter the Live Draw! 🎲</h3>
-                <p class="text-xs text-slate-400">Type your name below to instantly draw your random World Cup teams!</p>
+                <h3 class="text-lg font-black text-amber-400">Draw Your Teams! 🎲</h3>
+                <p class="text-xs text-slate-400">Type your name below to instantly claim your random sweepstakes teams and unlock your personalized match schedule.</p>
                 
-                <input type="text" id="username-input" placeholder="Enter your full name" class="w-full bg-slate-900 border border-slate-600 rounded-xl px-3 py-2 text-sm text-center focus:outline-none focus:border-amber-400 text-white font-bold">
+                <input type="text" id="username-input" placeholder="Enter your name" class="w-full bg-slate-900 border border-slate-600 rounded-xl px-3 py-2 text-sm text-center focus:outline-none focus:border-amber-400 text-white font-bold">
                 
                 <button onclick="executeRandomDraw()" class="w-full bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-slate-950 font-black py-3 rounded-xl text-sm shadow-lg transition transform active:scale-95">
-                    🎰 DRAW MY TEAMS
+                    🎰 GENERATE MY DRAW
                 </button>
             </div>
         </div>
@@ -39,66 +39,44 @@
         <!-- REVEAL ANIMATION SCREEN -->
         <div id="reveal-screen" class="fixed inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center p-6 text-center hidden">
             <div class="text-6xl animate-bounce mb-4">🎰</div>
-            <h2 class="text-xl font-black tracking-wider text-amber-400 animate-pulse">SHUFFLING WORLD CUP TEAMS...</h2>
-            <p class="text-xs text-slate-500 mt-2">Selecting allocations from available pools</p>
+            <h2 class="text-xl font-black tracking-wider text-amber-400 animate-pulse">SHUFFLING TEAMS...</h2>
         </div>
         
-        <!-- VIEW 1: LEADERBOARD -->
-        <div id="leaderboard-view" class="view-panel space-y-4">
-            <!-- PERSONAL COPY TOKEN SECTION -->
-            <div id="share-card" class="bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl hidden">
-                <p class="text-xs text-amber-400 font-bold mb-2 text-center">📢 Send your Draw Code to the group admin:</p>
-                <div class="flex gap-2">
-                    <input type="text" id="share-token" readonly class="bg-slate-950 text-slate-300 text-xs font-mono rounded-lg px-2 py-1 w-full text-center border border-slate-800">
-                    <button onclick="copyShareToken()" class="bg-amber-500 text-slate-950 text-xs font-bold px-3 py-1 rounded-lg">Copy</button>
-                </div>
+        <!-- LIVE MATCHES CONTAINER -->
+        <div class="space-y-4">
+            <div class="flex justify-between items-center px-1">
+                <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider">Tournament Fixtures & Live Scores</h2>
+                <span class="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full font-bold animate-pulse">● Live Tracking</span>
             </div>
-
-            <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/60 shadow-xl">
-                <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Live Sweepstakes Standings</h2>
-                <div id="leaderboard-list" class="divide-y divide-slate-700/50"></div>
-            </div>
-        </div>
-
-        <!-- VIEW 2: AUTOMATED AUTOMATIC FIXTURES -->
-        <div id="fixtures-view" class="view-panel hidden">
-            <div class="bg-slate-800/50 p-2 rounded-2xl border border-slate-700/60 shadow-xl overflow-hidden min-h-[500px]">
-                <!-- SCOREAXIS REAL-TIME LIVE WIDGET FOR WORLD CUP -->
-                <iframe 
-                    id="scoreaxis-widget"
-                    src="https://www.scoreaxis.com/widget/live-scores?autoHeight=1&bodyBackground=%231e293b&textColor=%23f8fafc&borderColor=%23334155&linksHoverColor=%23fbbf24&headerBackgroundColor=%230f172a&headerTextColor=%23fbbf24&tabsBackgroundColor=%231e293b&tabsTextColor=%2394a3b8&tabsActiveBackgroundColor=%23fbbf24&tabsActiveTextColor=%230f172a&instantsBackgroundColor=%230f172a&instantsTextColor=%23f8fafc&competitions=4" 
-                    style="width: 100%; border: none; transition: all 0.3s ease;" 
-                    height="600"
-                    title="Live Football Scores">
-                </iframe>
+            
+            <!-- Dynamic Schedule gets injected here -->
+            <div id="fixtures-container" class="space-y-3">
+                <p class="text-center text-xs text-slate-500 py-8">Fetching real-time match data...</p>
             </div>
         </div>
 
     </main>
 
-    <!-- Navigation -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-slate-800/90 backdrop-blur-lg border-t border-slate-700 px-6 py-2 flex justify-around max-w-md mx-auto shadow-2xl rounded-t-2xl">
-        <button onclick="switchView('leaderboard')" id="nav-leaderboard" class="flex flex-col items-center gap-1 text-amber-400 transition">
-            <span class="text-xl">📊</span><span class="text-xs font-semibold">Leaderboard</span>
-        </button>
-        <button onclick="switchView('fixtures')" id="nav-fixtures" class="flex flex-col items-center gap-1 text-slate-400 transition">
-            <span class="text-xl">⚽</span><span class="text-xs font-semibold">Live Matchcenter</span>
-        </button>
-    </nav>
-
     <script>
-        // 🏁 POOL OF TEAMS (App shuffles from this pool)
-        const availableTeams = [
-            "🇧🇷 Brazil", "🇫🇷 France", "🦁 England", "🇦🇷 Argentina", "🇪🇸 Spain", 
-            "🇩🇪 Germany", "🇮🇹 Italy", "🇵🇹 Portugal", "🇳🇱 Netherlands", "🇲🇦 Morocco", 
-            "🇺🇸 USA", "🇲🇽 Mexico", "🇨🇦 Canada", "🇧🇪 Belgium", "🇭🇷 Croatia"
+        // Pool of available tournament teams
+        const teamPool = [
+            "USA", "Mexico", "Canada", "Brazil", "Argentina", "England", "France", 
+            "Spain", "Germany", "Italy", "Portugal", "Netherlands", "Belgium", 
+            "Morocco", "Senegal", "Japan", "South Korea", "Australia", "Uruguay"
         ];
 
-        // 📝 ADMIN MASTER BOARD: Drop your friends' configurations right here!
-        const masterLeaderboard = [
-            { name: "Alex (Sample)", teams: ["🇧🇷 Brazil", "🦁 England"], points: 6 },
-            { name: "Sarah (Sample)", teams: ["🇫🇷 France", "🇲🇦 Morocco"], points: 3 }
-        ];
+        // We fetch live scores completely free from an open tournament API project
+        async function fetchLiveScores() {
+            try {
+                // Using a reliable open-source sports API endpoint for tournament data
+                const response = await fetch('https://api.openligadb.de/getmatchdata/wm');
+                const data = await response.json();
+                renderSchedule(data);
+            } catch (error) {
+                console.log("Error loading sports feed, using active match center fallback...", error);
+                useFallbackSchedule();
+            }
+        }
 
         function checkUserSession() {
             const savedName = localStorage.getItem('sw_name');
@@ -106,18 +84,20 @@
                 document.getElementById('name-modal').classList.remove('hidden');
             } else {
                 showUserDashboard(savedName);
+                fetchLiveScores();
             }
         }
 
         function executeRandomDraw() {
             const nameInput = document.getElementById('username-input').value.trim();
-            if (!nameInput) return alert("Please enter your name first!");
+            if (!nameInput) return alert("Please type your name!");
 
             document.getElementById('reveal-screen').classList.remove('hidden');
 
             setTimeout(() => {
-                let shuffled = [...availableTeams].sort(() => 0.5 - Math.random());
-                let drawnTeams = [shuffled[0], shuffled[1]]; // Allocates two randomized teams
+                let shuffled = [...teamPool].sort(() => 0.5 - Math.random());
+                // Assign 2 completely random teams to this phone's memory
+                let drawnTeams = [shuffled[0], shuffled[1]]; 
 
                 localStorage.setItem('sw_name', nameInput);
                 localStorage.setItem('sw_teams', JSON.stringify(drawnTeams));
@@ -126,6 +106,7 @@
                 document.getElementById('name-modal').classList.add('hidden');
                 
                 showUserDashboard(nameInput);
+                fetchLiveScores();
             }, 2000);
         }
 
@@ -135,49 +116,75 @@
             const cachedTeams = JSON.parse(localStorage.getItem('sw_teams') || "[]");
 
             banner.classList.remove('hidden');
-            text.innerText = `👋 PROFILE: ${name.toUpperCase()} | YOUR TEAMS: ${cachedTeams.join(' & ')}`;
-
-            const shareCard = document.getElementById('share-card');
-            const shareInput = document.getElementById('share-token');
-            shareCard.classList.remove('hidden');
-            shareInput.value = `${name}: ${cachedTeams.join(' & ')}`;
+            text.innerText = `👋 PROFILE: ${name.toUpperCase()} | YOUR HIGH-PRIORITY TEAMS: ${cachedTeams.join(' & ').toUpperCase()}`;
         }
 
-        function copyShareToken() {
-            const tokenInput = document.getElementById('share-token');
-            tokenInput.select();
-            tokenInput.setSelectionRange(0, 99999);
-            navigator.clipboard.writeText(tokenInput.value);
-            alert("Copied! Text this code to your group admin chat.");
-        }
+        function renderSchedule(matches) {
+            const container = document.getElementById('fixtures-container');
+            const userTeams = JSON.parse(localStorage.getItem('sw_teams') || "[]").map(t => t.toLowerCase());
 
-        function loadLeaderboard() {
-            const list = document.getElementById('leaderboard-list');
-            const sorted = [...masterLeaderboard].sort((a,b) => b.points - a.points);
-            list.innerHTML = sorted.map((player, index) => `
-                <div class="flex items-center justify-between py-3">
-                    <div class="flex items-center gap-3">
-                        <span class="text-sm font-bold text-slate-500">#${index + 1}</span>
-                        <div>
-                            <p class="font-bold text-white">${player.name}</p>
-                            <p class="text-xs text-slate-400">${player.teams.join(' / ')}</p>
+            if (!matches || matches.length === 0) {
+                useFallbackSchedule();
+                return;
+            }
+
+            container.innerHTML = matches.map(match => {
+                const team1 = match.team1.teamName;
+                const team2 = match.team2.teamName;
+                
+                // Smart Highlight Engine: Checks if this phone owns either playing team
+                const ownsTeam1 = userTeams.some(t => team1.toLowerCase().includes(t));
+                const ownsTeam2 = userTeams.some(t => team2.toLowerCase().includes(t));
+                const isUserMatch = ownsTeam1 || ownsTeam2;
+
+                // Visual styling based on priority mapping
+                const borderStyle = isUserMatch ? 'border-amber-500 bg-amber-500/5 shadow-lg shadow-amber-500/5' : 'border-slate-700/40 bg-slate-800/40';
+                const badgeStyle = isUserMatch ? 'bg-amber-500 text-slate-950' : 'bg-slate-700 text-slate-300';
+                
+                // Parse date & time string cleanly
+                const matchDate = new Date(match.matchDateTime);
+                const localTime = matchDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const localDate = matchDate.toLocaleDateString([], {month: 'short', day: 'numeric'});
+
+                // Check for live or finished score properties
+                const score1 = match.matchResults && match.matchResults[0] ? match.matchResults[0].pointsTeam1 : "-";
+                const score2 = match.matchResults && match.matchResults[0] ? match.matchResults[0].pointsTeam2 : "-";
+                const scoreDisplay = match.matchIsFinished ? `${score1} - ${score2}` : (match.matchResults.length > 0 ? `${score1} - ${score2} (LIVE)` : 'vs');
+
+                return `
+                    <div class="p-4 rounded-2xl border ${borderStyle} transition duration-300">
+                        <div class="flex justify-between items-center text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-wider">
+                            <span>📅 ${localDate}</span>
+                            <span class="px-2 py-0.5 rounded-full ${badgeStyle}">⏰ ${localTime}</span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm font-bold">
+                            <div class="w-2/5 text-right pr-2 truncate ${ownsTeam1 ? 'text-amber-400 font-black text-base' : 'text-slate-200'}">
+                                ${team1} ${ownsTeam1 ? '⭐' : ''}
+                            </div>
+                            <div class="bg-slate-950/80 px-3 py-1.5 rounded-xl border border-slate-700 text-center text-amber-400 tabular-nums min-w-[60px] text-xs">
+                                ${scoreDisplay}
+                            </div>
+                            <div class="w-2/5 text-left pl-2 truncate ${ownsTeam2 ? 'text-amber-400 font-black text-base' : 'text-slate-200'}">
+                                ${ownsTeam2 ? '⭐' : ''} ${team2}
+                            </div>
                         </div>
                     </div>
-                    <span class="bg-slate-700 px-3 py-1 rounded-full text-xs font-black text-amber-400">${player.points} pts</span>
+                `;
+            }).join('');
+        }
+
+        function useFallbackSchedule() {
+            // High-reliability layout wrapper if external server data fails to bind instantly
+            const container = document.getElementById('fixtures-container');
+            container.innerHTML = `
+                <div class="text-center py-6 text-xs text-slate-500">
+                    <p>Live schedule feed updating shortly.</p>
                 </div>
-            `).join('');
+            `;
         }
 
-        function switchView(view) {
-            document.querySelectorAll('.view-panel').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`${view}-view`).classList.remove('hidden');
-            document.getElementById('nav-leaderboard').className = view === 'leaderboard' ? 'flex flex-col items-center gap-1 text-amber-400' : 'flex flex-col items-center gap-1 text-slate-400';
-            document.getElementById('nav-fixtures').className = view === 'fixtures' ? 'flex flex-col items-center gap-1 text-amber-400' : 'flex flex-col items-center gap-1 text-slate-400';
-        }
-
-        // Run
+        // Initialize App Engine
         checkUserSession();
-        loadLeaderboard();
     </script>
 </body>
 </html>
